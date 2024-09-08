@@ -162,3 +162,107 @@ Explanation: Theorem name is _zero_add instead of zero_add because zero_add is a
 more general theorem in Mathlib. Our Lean 4 proof uses pattern matching syntax for induction
 and the server proof uses the notation that doesn't highlight the base case and the inductive step.
 -/
+
+/- Prove: For all natural numbers a,b, we have succ(a) + b = succ(a + b). -/
+theorem succ_add (a : Nat) (b : Nat) : Nat.succ a + b = Nat.succ (a + b) := by
+  induction b with
+  | zero => rw [Nat.add_zero (Nat.succ a), Nat.add_zero a]
+  | succ b ih =>
+    rw [Nat.add_succ (Nat.succ a) b, ih, Nat.add_succ]
+
+/- Proof:
+```
+induction b with b ih
+rw[add_zero]
+rw[add_zero]
+rfl
+rw[add_succ (succ a) b]
+rw[ih]
+rw[add_succ]
+rfl
+```
+
+Explanation: The first step is to decide whether to pursue induction on a or induction on b.
+
+First, let's consider induction on a.
+The base case requres us to prove succ 0 + b = succ (0 + b) using only add_succ, add_zero, and
+zero_add. This means proving 1 + b = b + 1. We could try proving this by induction on b.
+Base Case: 1 + 0 = 0 + 1
+Inductive Hypothesis: 1 + b = b + 1
+Inductive Step: 1 + (b + 1) = (b + 1) + 1
+add_succ 1 b + 1 gives us 1 + (b + 1) = (1 + b) + 1
+ih gives us (1 + b) + 1 = (b + 1) + 1 and the proof of inductive step follows by rfl. This feels
+like a lot of work just for the base case.
+
+Therefore, let's consider induction on b instead.
+The base case is (a + 1) + 0 = (a + 0) + 1. We apply add_zero (a + 1) and add_zero a to rewrite the
+hypothesis into a + 1 = a + 1, which is proved by reflexivity.
+The inductive hypothesis is succ a + b = succ (a + b), which is the same as
+(a + 1) + b = (a + b) + 1, and can be thought of as ability to swap 1 + b and b + 1.
+The inductive step requires us to prove that succ a + succ b = succ (a + succ b). We will rewrite
+both sides into succ (succ (a + b)).
+We first apply add_succ to (succ a) and b to rewrite succ a + succ b as succ (succ a + b).
+We then apply the inductive hypothesis to rewrite succ (succ a + b) as succ (succ (a + b)).
+Finally we apply add_succ to re-write succ (a + succ b) as succ (succ (a + b)). The proof
+now follows by reflexivity.
+-/
+
+/- Prove: On the set of natural numbers, addition is commutative. In other words, if a and b
+are arbitrary natural numbers, then a + b = b + a .-/
+theorem _add_comm (a : Nat) (b: Nat) : a + b = b + a := by
+  induction a with
+  | zero => rw[Nat.zero_add, Nat.add_zero]
+  | succ a ih =>
+    rw[succ_add, ih, Nat.add_succ b a]
+
+/- Proof:
+```
+induction a with d hd
+rw [zero_add, add_zero]
+rfl
+rw [succ_add, hd, add_succ b d]
+rfl
+```
+
+Explanation: The proof is by induction on a. The base case uses zero_add and add_zero to rewrite
+(0 + b) and (b + 0) into b. The inductive step uses succ_add, add_succ, and the inductive hypothesis
+to rewrite ((succ a) + b) and (b + succ a) into succ (b + a).
+-/
+
+/- Prove: On the set of natural numbers, addition is associative. In other words, if a, b and c
+are arbitrary natural numbers, we have (a + b) + c = a + (b + c). -/
+theorem _add_assoc (a : Nat) (b : Nat) (c : Nat) : (a + b) + c = a + (b + c) := by
+  induction a with
+  | zero => rw[Nat.zero_add, Nat.zero_add]
+  | succ a ih =>
+    rw[Nat.succ_add a (b + c), <-ih, <-Nat.succ_add (a + b) c, Nat.succ_add a b]
+
+/- Proof:
+```
+induction a with a ih
+rw[zero_add, zero_add]
+rfl
+rw[succ_add a (b + c)]
+rw[<-ih]
+rw[<-succ_add (a + b) c]
+rw[succ_add a b]
+rfl
+```
+
+Explanation: The proof is by induction on a. The base case is proven by applying zero_add tactic
+to both left and right hand side of the goal. In the inductive step, we first transform the
+right hand side into succ(a + b + c) using succ_add a (b + c) and the inductive hypothesis. We then
+apply succ_add to both right hand side and left hand side to rewrite both into succ (a + b) + c.
+-/
+
+/- Prove: If a, b and c are arbitrary natural numbers, we have (a + b) + c = (a + c) + b. -/
+theorem _add_right_comm (a : Nat) (b : Nat) (c : Nat) : (a + b) + c = (a + c) + b := by
+  rw[add_assoc a b c, add_comm b c, <-add_assoc a c b]
+/- Proof:
+rw[add_assoc a b c, add_comm b c, <-add_assoc a c b]
+rfl
+
+Explanation: We first use associativity to rewrite the left hand side from (a + b) + c into
+a + (b + c). We then use commutativity to rewrite a + (b + c) into a + (c + b). Finally we use
+associativity again and the proof follows by reflexivity.
+-/
