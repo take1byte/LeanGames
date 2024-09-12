@@ -266,3 +266,124 @@ Explanation: We first use associativity to rewrite the left hand side from (a + 
 a + (b + c). We then use commutativity to rewrite a + (b + c) into a + (c + b). Finally we use
 associativity again and the proof follows by reflexivity.
 -/
+
+/- ## Multiplication World -/
+
+/- Multiplication world starts with two definitions:
+mul_zero a := a * 0 = 0
+mul_succ a b := a * Nat.succ b = a * b + b. -/
+
+/- Prove:  For any natural number m, we have m * 1 = m. -/
+theorem _mul_one (a : Nat) : a * 1 = a := by
+  rw[<-Nat.zero_add 1, <-Nat.succ_eq_add_one 0]
+  nth_rewrite 2 [<-Nat.zero_add a]
+  nth_rewrite 2 [<- Nat.mul_zero a]
+  rw [Nat.mul_succ]
+/- Proof:
+```
+rw[<-zero_add 1]
+rw[<-succ_eq_add_one 0]
+nth_rewrite 2 [<-zero_add m]
+nth_rewrite 2 [<-mul_zero m]
+rw [mul_succ]
+rfl
+```
+
+Explanation: The proof proceeds by rewriting both sides of the goal into m * 0 + m. To rewrite the
+left hand side (lhs), we rewrite 1 = 0 + 1 = succ 0 and apply mul_succ tactic. To rewrite the right
+hand side (rhs), we rewrite m = 0 + m and apply mul_zero in reverse to get m * 0 + m.
+-/
+
+/- Prove:  For all natural numbers m, we have 0 * m = 0. -/
+theorem _zero_mul (m : Nat) : 0 * m = 0 := by
+  induction m with
+  | zero => rw[Nat.mul_zero]
+  | succ m ih => rw[Nat.mul_succ, ih, Nat.add_zero]
+
+/- Proof:
+```
+induction m with m ih
+rw[mul_zero]
+rfl
+rw[mul_succ]
+rw[ih]
+rw[add_zero]
+rfl
+```
+
+Explanation: The proof is by induction on m. The base case follows from mul_zero. In the inductive
+step we apply mul_succ to rewrite 0 * succ m into 0 * m + 0. We then apply the inductive hypothesis
+and add_zero tactic to rewrite 0 * m + 0 into 0. We close the goal by reflexivity.
+-/
+
+
+/- Prove: For all natural numbers a and b, we have (succ a) * b = a * b + b. -/
+theorem _succ_mul (a : Nat) (b : Nat) : Nat.succ a * b = a * b + b := by
+  induction b with
+  | zero => rw[Nat.mul_zero, Nat.mul_zero, Nat.add_zero]
+  | succ b ih =>
+    rw[Nat.mul_succ (Nat.succ a) b, ih]
+    rw[Nat.mul_succ]
+    rw[Nat.succ_eq_add_one a]
+    rw[← Nat.succ_eq_add_one b]
+    rw[Nat.add_assoc (a*b) a (b+1), ← Nat.add_assoc a b 1]
+    rw[Nat.add_comm a b]
+    rw[Nat.add_assoc b a 1]
+    rw[Nat.add_assoc (a*b) b (a+1)]
+/- Proof:
+```
+induction b with b ih
+repeat rw [mul_zero]
+rw[add_zero]
+rfl
+rw[mul_succ (succ a) b, ih]
+nth_rewrite 1 [succ_eq_add_one]
+rw [mul_succ]
+rw [succ_eq_add_one]
+rw [add_assoc (a*b) a (b+1)]
+rw[<-add_assoc a b 1]
+rw [add_comm a b]
+rw [add_assoc (a*b) b (a+1)]
+rw [<-add_assoc b a 1]
+rfl
+```
+
+Explanation: The proof is by induction on b. The base case follows by applying mul_zero and
+add_zero tactics. The inductive step uses mul_succ, add_assoc, add_comm, and succ_eq_add_one tactics
+to rewrite both the lhs and the rhs into a * b + (b + a + 1). First, we apply mul_succ and the
+inductive hypothesis to rewrite (succ a) * (succ b) into a * b + b + succ a, which we then rewrite
+into a * b + b + (a + 1) using succ_eq_add_one tactic. Next, we apply mul_succ and succ_eq_add_one
+to rewrite the rhs from (a * succ b + succ b) to  a * b + a + (b + 1). We then apply associativity
+of addition tactics to both the rhs and lhs, rewrite a + b into b + a using add_comm on the rhs,
+and apply add_assoc again to get a * b + (b + a + 1) on both sides. The proof is closed by rfl.
+-/
+
+/- Prove: Multiplication is commutative. -/
+theorem _mul_comm (a : Nat) (b : Nat) : a * b = b * a := by
+  induction b with
+  | zero => rw [Nat.mul_zero, Nat.zero_mul]
+  | succ b ih =>
+    rw[Nat.mul_succ, Nat.succ_mul, ih]
+
+/- Proof:
+```
+induction b with b ih
+rw [mul_zero, zero_mul]
+rfl
+rw [mul_succ, succ_mul, ih]
+rfl
+```
+
+Explanation: The proof is by induction on b. The base case is closed with mul_zero and zero_mul
+tactics. The inductive step is closed by applying mul_succ on the lhs, succ_mul on the rhs, the
+inductive hypothesis, and finally rfl.
+-/
+
+/- Template -/
+/- Prove: -/
+/- Proof:
+```
+```
+
+Explanation:
+-/
