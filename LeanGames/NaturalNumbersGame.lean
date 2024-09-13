@@ -379,6 +379,77 @@ tactics. The inductive step is closed by applying mul_succ on the lhs, succ_mul 
 inductive hypothesis, and finally rfl.
 -/
 
+/- Prove: For any natural number m, we have 1 * m = m. -/
+theorem _one_mul (one_eq_succ_zero: 1 = Nat.succ 0) (m : Nat) : 1 * m = m := by
+  rw[one_eq_succ_zero, Nat.succ_mul, Nat.zero_mul, Nat.zero_add]
+
+/- Proof:
+```
+rw [one_eq_succ_zero, succ_mul, zero_mul, zero_add]
+rfl
+```
+
+Explanation: In Lean 4 proof, we include one_eq_succ_zero as an assumption because Nat.one_eq_succ_zero
+has been deprecated and one_eq_succ_zero is available in the game server at this stage. The proof
+starts by rewriting 1 on the lhs as succ 0 and applying succ_mul to rewrite (succ 0) * m into
+0 * m + m. The proof is completed by applying zero_mul to rewrite 0 * m into 0, zero_add to
+rewrite 0 + m into m, and rfl.
+-/
+
+/- Prove: For any natural number m, we have 2 * m = m + m. -/
+theorem _two_mul (two_eq_succ_one : 2 = Nat.succ 1)(m : Nat) : 2 * m = m + m := by
+  rw[two_eq_succ_one, Nat.succ_mul, Nat.one_mul]
+
+
+/- Proof:
+```
+rw [two_eq_succ_one, succ_mul, one_mul]
+rfl
+```
+
+Explanation: In Lean 4 proof, we include two_eq_succ_one as an assumption because it's not part of
+mathlib and it's available at this stage of the game in the game server. To produce a proof, we
+first rewrite 2 as succ 1. We then apply succ_mul to rewrite (succ 1) * m as
+1 * m + m. Finally, we apply one_mul to rewrite 1 * m as m and complete the proof by rfl.
+-/
+
+/- Prove: Multiplication is distributive over addition on the left. In other words, for all
+natural numbers a, b and c, we have a * (b + c) = a * b + a * c. -/
+theorem _mul_add (a : Nat) (b : Nat) (c : Nat) : a * (b + c) = a * b + a * c:= by
+  induction a with
+  | zero => repeat rw[Nat.zero_mul]
+  | succ a ih =>
+    repeat rw[Nat.succ_mul]
+    rw[ih]
+    rw[Nat.add_assoc (a * b) b (a * c + c)]
+    rw[<-Nat.add_assoc b (a * c) c]
+    rw[Nat.add_comm b (a * c)]
+    rw[Nat.add_assoc (a * c) b c]
+    rw[<-Nat.add_assoc (a * b) (a * c) (b + c)]
+/- Proof:
+```
+induction a with a ih
+repeat rw[zero_mul]
+rw[zero_add]
+rfl
+repeat rw[succ_mul]
+rw[ih]
+rw[add_assoc (a * b) b (a * c + c)]
+rw[<-add_assoc b (a * c) c]
+rw[add_comm b (a * c)]
+rw[add_assoc (a * c) b c]
+rw[<-add_assoc (a * b) (a * c) (b + c)]
+rfl
+```
+
+Explanation: The proof is by induction on a. The base case is completed by repeated application of
+zero_mul followed by zero_add and rfl. The inductive step starts with a repeated application of
+succ_mul to rewrite the lhs into a * (b + c) + (b + c) and the rhs into a * b + b + (a * c + c). We
+then apply the inductive hypothesis to rewrite the lhs into a * b + a * c + (b + c). The proof
+concludes by applying associativity and commutativity of addition to rewrite both sides into
+a * b + a * c + (b + c) and using rfl.
+-/
+
 /- Template -/
 /- Prove: -/
 /- Proof:
