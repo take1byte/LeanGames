@@ -450,6 +450,45 @@ concludes by applying associativity and commutativity of addition to rewrite bot
 a * b + a * c + (b + c) and using rfl.
 -/
 
+/- Prove: Addition is distributive over multiplication. In other words, for all natural numbers
+a, b and c, we have (a + b) * c = a * c + b * c. -/
+theorem _add_mul (a : Nat) (b : Nat) (c : Nat) : (a + b) * c = a * c + b * c := by
+  rw[Nat.mul_comm (a + b) c, Nat.mul_add, Nat.mul_comm c a, Nat.mul_comm c b]
+/- Proof:
+```
+rw[mul_comm (a + b) c, mul_add, mul_comm c a, mul_comm c b]
+rfl
+```
+
+Explanation: The proof uses commutativity of multiplication and distributivity of multiplication over
+addition. First we rewrite (a + b) * c into c * (a + b) with mul_comm tactic. We then use mul_add
+to rewrite c * (a + b) into c * a + c * b. The proof completes by applying mul_comm to both terms
+of the sum c * a + c * b to get a * c + b * c and using rfl.
+-/
+
+/- Prove: Multiplication is associative. In other words, for all natural numbers a, b and c, we
+have (a * b) * c = a * (b * c). -/
+theorem _mult_assoc (a : Nat) (b : Nat) (c: Nat) : (a * b) * c = a * (b * c) := by
+  induction a with
+  | zero => repeat rw[Nat.zero_mul]
+  | succ a ih => rw[Nat.succ_mul, Nat.add_mul, ih, Nat.succ_mul]
+/- Proof:
+```
+induction a with a ih
+repeat rw[zero_mul]
+rfl
+rw[succ_mul,add_mul, ih, succ_mul]
+rfl
+```
+
+Explanation: The proof proceeds by induction on a. The base case follows by repeated application of
+zero_mul tactic. In the inductive step, we first use succ_mul to rewrite (succ a) * b * c into
+(a * b + b) * c, which we rewrite into a * b * c + b * c with add_mul tactic. We then apply the
+inductive hypothesis to rewrite a * b * c + b * c into a * (b * c) + b * c. Finally, we apply
+succ_mul to the rhs of the goal to get a * (b * c) + b * c and close the goal by rfl.
+-/
+
+
 /- Template -/
 /- Prove: -/
 /- Proof:
