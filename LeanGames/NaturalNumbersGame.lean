@@ -1,4 +1,5 @@
-import Mathlib
+import Mathlib.Tactic.NthRewrite
+import Mathlib.Init.Data.Nat.Lemmas
 
 /- ## Tutorial World -/
 
@@ -65,8 +66,8 @@ which is closed by rfl.
 
 /- Prove: a+(b+0)+(c+0)=a+b+c -/
 example (a b c : ℕ) : a + (b + 0) + (c + 0) = a + b + c := by
-  rw[add_zero]
-  rw[add_zero]
+  rw[Nat.add_zero]
+  rw[Nat.add_zero]
 /- Proof:
 ```
 rw[add_zero]
@@ -79,8 +80,8 @@ transforms the goal to a + b + c = a + b + c, which is then closed by rfl.
 -/
 
 example (a b c : ℕ) : a + (b + 0) + (c + 0) = a + b + c := by
-  rw[add_zero c]
-  rw[add_zero]
+  rw[Nat.add_zero c]
+  rw[Nat.add_zero]
 
 /- Proof:
 ```
@@ -257,7 +258,7 @@ apply succ_add to both right hand side and left hand side to rewrite both into s
 
 /- Prove: If a, b and c are arbitrary natural numbers, we have (a + b) + c = (a + c) + b. -/
 theorem _add_right_comm (a : Nat) (b : Nat) (c : Nat) : (a + b) + c = (a + c) + b := by
-  rw[add_assoc a b c, add_comm b c, <-add_assoc a c b]
+  rw[Nat.add_assoc a b c, Nat.add_comm b c, ← Nat.add_assoc a c b]
 /- Proof:
 rw[add_assoc a b c, add_comm b c, <-add_assoc a c b]
 rfl
@@ -488,6 +489,244 @@ inductive hypothesis to rewrite a * b * c + b * c into a * (b * c) + b * c. Fina
 succ_mul to the rhs of the goal to get a * (b * c) + b * c and close the goal by rfl.
 -/
 
+/- ## Power World -/
+
+/- Power worlds starts with these definitions
+
+pow_zero (a : ℕ) : a ^ 0 = 1
+pow_succ (a b : ℕ) : a ^ succ b = a ^ b * a
+-/
+
+/- Prove: 0 ^ 0 = 1. -/
+theorem zero_pow_zero : (0 : ℕ) ^ 0 = 1 := by
+  rw [Nat.pow_zero 0]
+
+/- Proof:
+```
+rw [pow_zero 0]
+rfl
+```
+
+Explanation: The proof follows from the definition of pow_zero by setting a = 0 in a ^ 0 = 1.
+-/
+
+/- Prove: For all natural numbers m, 0 ^ succ(m) = 0. -/
+theorem zero_pow_succ (m : ℕ) : (0 : ℕ) ^ (Nat.succ m) = 0 := by
+  induction m with
+  | zero => rw[Nat.pow_succ, zero_pow_zero]
+  | succ m ih => rw [Nat.pow_succ, ih]
+
+/- Proof:
+```
+induction m with m ih
+rw[pow_succ, zero_pow_zero]
+rw[mul_zero]
+rfl
+rw [pow_succ, ih]
+rw[mul_zero]
+rfl
+```
+
+Explanation: The proof is by induction on m. The base case applies pow_succ to rewrite 0 ^ (succ 0)
+into 0 ^ 0 * 0, which is then rewritten into 1 * 0 with zero_pow_zero tactic. The base case is
+closed by mul_zero and rfl. The inductive step rewrites 0 ^ (succ (succ m)) as 0 ^ (succ m) * 0,
+applies the inductive hypothesis to get 0 * 0 and closes the goal with mul_zero and rfl.
+-/
+
+/- Prove: For all naturals a, a ^ 1 = a. -/
+theorem _pow_one (a : ℕ) (one_eq_succ_zero: 1 = Nat.succ 0) : a ^ 1 = a := by
+  rw[one_eq_succ_zero, Nat.pow_succ, Nat.pow_zero, Nat.one_mul]
+
+/- Proof:
+```
+rw[one_eq_succ_zero]
+rw[pow_succ, pow_zero, one_mul]
+rfl
+```
+
+Explanation: We first rewrite 1 in the exponent of a into succ 0 using one_eq_succ_zero. We include
+one_eq_succ_zero as an assumption in the theorem because this tactic has been deprecated from
+Mathlib. We then apply pow_succ and pow_zero to rewrite a ^ succ 0 into a ^ 0 * a and 1 * a. We
+close the goal with one_mul and rfl.
+-/
+
+
+/- Prove: For all naturals m, 1 ^ m = 1. -/
+theorem _one_pow (m : ℕ) : (1 : ℕ) ^ m = 1 := by
+  induction m with
+  | zero => rw[Nat.pow_zero]
+  | succ m ih => rw[Nat.pow_succ, ih]
+/- Proof:
+```
+induction m with m ih
+rw[pow_zero]
+rfl
+rw[pow_succ, ih, mul_one]
+rfl
+```
+
+Explanation: The proof is by induction on m. The base case follows by applying pow_zero. The
+inductive step is proved by apply pow_succ to rewrite 1 ^ succ m into 1 ^ m * 1 and the inductive
+hypothesis to get 1 * 1. The prove concludes by apply mul_one and rfl tactics.
+-/
+
+/- Prove: For all naturals a, a ^ 2 = a * a. -/
+theorem _pow_two (a : ℕ) (two_eq_succ_one : 2 = Nat.succ 1) : a ^ 2 = a * a := by
+  rw[two_eq_succ_one, Nat.pow_succ, Nat.pow_one]
+/- Proof:
+```
+rw[two_eq_succ_one, pow_succ, pow_one]
+rfl
+```
+
+Explanation: We first rewrite 2 in the exponent of a into succ 1. We then apply pow_succ to rewrite
+a ^ succ 1 into a ^ 1 * a. Finally, we apply pow_one to rewrite a ^ 1 into a and the goals is closed
+by rfl.
+-/
+
+
+/- Prove: For all naturals a, m, n, we have a ^ (m + n) = a ^ m * a ^ n. -/
+theorem _pow_add (a m n : ℕ) : a ^ (m + n) = a ^ m * a ^ n := by
+  induction n with
+  | zero => rw [Nat.add_zero, Nat.pow_zero, Nat.mul_one]
+  | succ n ih =>
+       rw[Nat.pow_succ a n, ← Nat.mul_assoc]
+       rw[← ih, ← Nat.pow_succ]
+       rw[← Nat.add_assoc]
+/- Proof:
+```
+induction n with n ih
+rw[add_zero, pow_zero, mul_one]
+rfl
+rw[pow_succ a n, ← mul_assoc]
+rw[← ih, ← pow_succ]
+rw [succ_eq_add_one n, ← add_assoc, ← succ_eq_add_one]
+rfl
+```
+
+Explanation: The proof is by induction on n. The base case requires us to prove that a ^ (m + 0) is
+equal to a ^ m * a ^ 0. We do that by rewriting both sides into a ^ m. On the lhs, we apply
+add_zero to rewrite a ^ (m + 0) into a ^ m. On the rhs, we apply pow_zero to rewrite a ^ 0 into 1
+and mul_one to rewrite a ^ m * 1 into a ^ m.
+
+In the inductive step we prove that both sides of the goal can be rewritten to  a ^ succ (m + n).
+First, we rewrite a ^ succ n into a ^ n * a on the rhs using pow_succ tactic. We then rewrite
+a ^ m * (a ^ n * a) into (a ^ m * a ^ n) * a using mul_assoc tactic in reverse. We apply the
+inductive hypothesis in reverse to rewrite a ^ m * a ^ n into a ^ (m + n) and pow_succ in reverse
+to rewrite a ^ (m + n) * a into a ^ succ (m + n). On the lhs, we apply succ_eq_add_one to rewrite
+succ n into n + 1. We then apply add_assoc to rewrite m + (n + 1) into (m + n) + 1 and apply
+succ_eq_add_one in reverse to rewrite (m + n) + 1 as succ (m + n). The goal is now closed by rfl.
+
+Note that in Lean 4 proof, we don't need to apply succ_eq_add_one because Lean 4 automatically
+rewrites succ x into x + 1.
+-/
+
+/- Prove:  For all naturals a, b, n, we have (ab) ^ n = a ^ n * b ^ n. -/
+theorem _mul_pow (a b n : ℕ) : (a * b) ^ n = a ^ n * b ^ n := by
+  induction n with
+  | zero =>
+    repeat rw[Nat.pow_zero]
+  | succ n ih =>
+    repeat rw[Nat.pow_succ]
+    rw[← Nat.mul_assoc (a^n * a) (b^n) b]
+    rw[Nat.mul_assoc (a^n) a (b^n)]
+    rw[Nat.mul_comm a (b^n)]
+    rw[← Nat.mul_assoc (a^n) (b^n) a]
+    rw[ih]
+    rw[← Nat.mul_assoc (a ^ n * b ^ n) a  b]
+/- Proof:
+```
+induction n with n ih
+repeat rw[pow_zero]
+rw[mul_one]
+rfl
+repeat rw[pow_succ]
+rw[← mul_assoc (a^n * a) (b^n) b]
+rw[mul_assoc (a^n) a (b^n)]
+rw[mul_comm a (b^n)]
+rw[← mul_assoc (a^n) (b^n) a]
+rw[ih]
+rw[← mul_assoc (a ^ n * b ^ n) a  b]
+rfl
+```
+
+Explanation: Our proof is by induction on n. The base case follows by repeated application of
+pow_zero tactic followed by mul_one tactic and rfl.
+
+We will close the inductive step goal by proving that both the lhs and the rhs can be rewritten
+into a ^ n * b ^ n * a * b. We start the inductive step by applying pow_succ three times to rewrite
+(a * b) ^ (succ n) into (a * b) ^ n * (a * b), a ^ (succ n) into a ^ n * a, and b ^ (succ n) into
+b ^ n * b. We the apply mul_assoc backwards and forwards to rewrite a ^ n * a * (b ^ n * b) into
+a ^ n * (a * b ^ n) * b, which allows us to apply mul_comm to a and b^n to obtain
+a ^ n * (b ^ n * a) * b. Now we apply mul_assoc in reverse once again to obtain
+a ^ n * b ^ n * a * b. Next, we use the inductive hypothesis to rewrite (a * b) ^ n into
+(a ^ n) * (b ^ n) and mul_assoc in reverse to obtain a ^ n * b ^ n * a * b. The goal is closed by
+rfl.
+-/
+
+
+/- Prove: For all naturals a, m, n, we have (a ^ m) ^ n = a^(mn). -/
+theorem pow_pow (a m n : ℕ) : (a ^ m) ^ n = a ^ (m * n) := by
+  induction n with
+  | zero => rw[Nat.pow_zero, Nat.mul_zero, Nat.pow_zero]
+  | succ n ih =>
+    rw[Nat.pow_succ, ih]
+    rw[← Nat.pow_add]
+    rw[Nat.mul_succ]
+/- Proof:
+```
+induction n with n ih
+rw[pow_zero, mul_zero, pow_zero]
+rfl
+rw[pow_succ, ih]
+rw[← pow_add]
+rw[mul_succ]
+rfl
+```
+
+Explanation: The proof is by induction on n. In the base case, we use pow_zero to rewrite
+(a ^ m) ^ 0 into 1. We use mul_zero and pow_zero to rewrite a ^ (m * 0) into 1 and close the base
+case by rfl.
+
+In the inductive step, we use pow_succ to rewrite (a ^ m) ^ (succ n) into (a ^ m) ^ n * a ^ m. We
+then apply the inductive hypothesis to rewrite (a ^ m) ^ n * a ^ m into a ^ (m * n) * a ^ m. Next,
+we use pow_add to rewrite a ^ (m * n) * a ^ m into a ^ (m * n + m). Finally, we apply mul_succ
+on the rhs to rewrite a ^ (m * succ n) into a ^ (m * n + m) and close the inductive steps with rfl.
+-/
+
+/- Prove: For all numbers a and b, we have (a + b) ^ 2 = a ^ 2 + b ^ 2 + 2 * a * b. -/
+theorem _add_sq (a b : ℕ) : (a + b) ^ 2 = a ^ 2 + b ^ 2 + 2 * a * b := by
+  rw[Nat.pow_two, Nat.mul_add]
+  repeat rw[Nat.add_mul]
+  rw[Nat.mul_comm b a]
+  repeat rw[← Nat.pow_two]
+  rw[Nat.add_assoc, Nat.add_comm (a * b) (a * b + b ^ 2), Nat.add_comm (a * b)  (b ^ 2)]
+  rw[Nat.add_assoc (b ^ 2) (a * b) (a * b), ← Nat.two_mul]
+  rw[← Nat.mul_assoc 2 a b]
+  rw[← Nat.add_assoc (a ^ 2) (b ^ 2) (2 * a * b)]
+/- Proof:
+```
+rw[pow_two, mul_add]
+repeat rw[add_mul]
+rw[mul_comm b a]
+repeat rw[← pow_two]
+rw[add_assoc, add_comm (a * b) (a * b + b ^ 2), add_comm (a * b)  (b ^ 2)]
+rw[add_assoc (b ^ 2) (a * b) (a * b), ← two_mul]
+rw[← mul_assoc 2 a b]
+rw[← add_assoc (a ^ 2) (b ^ 2) (2 * a * b)]
+rfl
+```
+
+Explanation: We will complete the proof by rewriting the lhs into the rhs. First, we use pow_two
+tactic to rewrite (a + b) ^ 2 into (a + b) * (a + b). We then use mul_add tactic to rewrite this
+further into (a + b) * a + (a + b) * b. Next, we apply add_mul twice to obtain
+a * a + b * a + (a * b + b * b). Next, we apply mul_comm to rewrite b * a into a * b. This gives us
+a * a + a * b + (a * b + b * b) and the goal is now in sight. We proceed by applying pow_two in
+reverse twice to rewrite a * a into a ^ 2 and b * b into b ^ 2. We then use add_assoc once and
+add_comm twice to move b ^ 2 into the position of the second summand. We than apply associativity
+again and collect the sum of two copies of a * b into 2 * (a * b) using two_mul tactic in reverse.
+We rewrite the term 2 * (a * b) into 2 * a * b using associativity in reverse. Finally, we
+associate the sum to the left and close the goal by rfl. -/
 
 /- Template -/
 /- Prove: -/
