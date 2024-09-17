@@ -821,6 +821,59 @@ Explanation: In this example, we are proving an implication of the form P implie
 -/
 
 
+/- Prove: x + 1 = y + 1 implies x = y. -/
+example (x : ℕ) : x + 1 = y + 1 → x = y := by
+  intro h
+  repeat rw[← Nat.succ_eq_add_one] at h
+  apply succ_inj at h
+  exact h
+/- Proof:
+```
+intro h
+repeat rw[← succ_eq_add_one] at h
+apply succ_inj at h
+exact h
+```
+
+Explanation: Since the goal is an implication, we start our proof by introducing the hypothesis and
+call its proof h with `intro h`. We then rewrite `x + 1` and `y + 1` into `succ x` and `succ y`
+with `succ_eq_add_one` tactic in reverse and `h` becomes `succ x = succ y`. Next, we apply
+`succ_inj` at `h`, which rewrites `h` into `x = y`. We close the goal with `exact` tactic.
+-/
+
+/- Prove: If x = y and x is not equal to y then we can deduce a contradiction. -/
+example (x y : ℕ) (h1 : x = y) (h2 : x ≠ y) : False := by
+  apply h2 at h1
+  exact h1
+/- Proof:
+```
+apply h2 at h1
+exact h1
+```
+
+Explanation:  In Lean 4, `x ≠ y` means `(x = y) → False`. We use this interpretation to rewrite h1
+into False by applying `h2: (x = y) → False` at `h1: x = y`. We then close the goal with `exact`.
+-/
+
+/- Prove: 0 is not equal to 1. -/
+theorem zero_ne_succ (a : ℕ) : 0 ≠ Nat.succ a := by skip
+
+theorem zero_ne_one : (0 : ℕ) ≠ 1 := by
+  exact zero_ne_succ 0
+/- Proof:
+```
+exact zero_ne_succ 0
+```
+
+Explanation: In this level, the goal is to prove that 0 is not equal to 1 using Peano's axiom that
+0 is not equal to a successor of any natural number. We state this Peano axiom as a theorem
+zero_ne_succ without proof.
+
+We notice that `zero_ne_one` is a special case of `zero_ne_succ` when `a = 0` and close the goal
+with `exact` tactic.
+-/
+
+
 /- Template -/
 /- Prove: -/
 /- Proof:
