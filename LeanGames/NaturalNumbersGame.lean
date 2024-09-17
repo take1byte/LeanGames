@@ -1,5 +1,6 @@
 import Mathlib.Tactic.NthRewrite
 import Mathlib.Init.Data.Nat.Lemmas
+import Mathlib.Tactic.applyAt
 
 /- ## Tutorial World -/
 
@@ -727,6 +728,98 @@ add_comm twice to move b ^ 2 into the position of the second summand. We than ap
 again and collect the sum of two copies of a * b into 2 * (a * b) using two_mul tactic in reverse.
 We rewrite the term 2 * (a * b) into 2 * a * b using associativity in reverse. Finally, we
 associate the sum to the left and close the goal by rfl. -/
+
+/- ## Implication World -/
+
+/- Prove: Assuming x + y = 37 and 3 * x + z = 42, we have x + y = 37. -/
+example (x y z : ℕ) (h1 : x + y = 37) (h2 : 3 * x + z = 42) : x + y = 37 := by
+  exact h1
+/- Proof:
+```
+exact h1
+```
+
+Explanation: The `exact` tactic closes the goal by applying one of the hypotheses verbatim. In this
+example, we close the goal x + y = 37 by applying the hypothesis h1 which has the same type as
+the goal. h2 is underlined because it's not used in the body of the proof.
+-/
+
+/- Prove: Assuming 0 + x = (0 + y) + 2, we have x = y + 2. -/
+example (x : ℕ) (h : 0 + x = 0 + y + 2) : x = y + 2 := by
+  repeat rw [Nat.zero_add] at h
+  exact h
+/- Proof:
+```
+repeat rw [zero_add] at h
+exact h
+```
+
+Explanation: We can use the suffix at h to do a rewrite of the hypothesis. In this example, we use
+zero_add tactic twice to rewrite h into x = y + 2, which we the use to close the goal with the
+`exact` tactic.
+-/
+
+/- Prove: If x = 37 and we know that x = 37  implies y = 42 then we can deduce y = 42. -/
+example (x y : ℕ) (h1 : x = 37) (h2 : x = 37 → y = 42) : y = 42 := by
+  apply h2 at h1
+  exact h1
+/- Proof:
+```
+apply h2 at h1
+exact h1
+```
+
+Explanation: For the Lean 4 proof to work, we need to include `import Mathlib.Tactic.applyAt` in
+the imports section because `apply at` tactic we need is [defined in mathlib](https://github.com/leanprover-community/mathlib4/blob/b9b0429f74af0747d75eae9c3c74f524d9e6e435/Mathlib/Tactic/ApplyAt.lean#L10).
+The `apply e at h` tactic applies the implications from `e` to hypothesis `h`. In this example,
+`apply h2 at h1` starts with hypothesis `h1: x = 37` and applies the implication
+`x = 37 implies y = 42` to rewrite `h1` into `y = 42`. The goal now can be closed with `exact h1`.
+-/
+
+/- Prove: If x + 1 = 4 then x = 3. -/
+theorem four_eq_succ_three : 4 = Nat.succ 3 := by rfl
+
+theorem succ_inj (a : ℕ) (b : ℕ) : Nat.succ a = Nat.succ b -> a = b := by
+  skip
+
+example (x : ℕ) (h : x + 1 = 4) : x = 3 := by
+  rw [four_eq_succ_three] at h
+  rw[← Nat.succ_eq_add_one] at h
+  apply succ_inj at h
+  exact h
+/- Proof:
+```
+rw [four_eq_succ_three] at h
+rw[← succ_eq_add_one] at h
+apply succ_inj at h
+exact h
+```
+
+Explanation: In this level, the game instructions allow us to assume `succ_inj` as a fact, which we
+state as a theorem without proof so we can use it in the example. We also state and prove
+`four_eq_succ_three` because it's availabe in the game server at this level.
+
+As for the proof, we first rewrite `4` as `succ 3` using `four_eq_succ_three` and then rewrite
+`x + 1` as `succ x` using `succ_eq_add_one` tactic in reverse. We then apply `succ_inj` theorem to
+`h: succ x = succ 3`, which rewrites `h` into `x = 3` and allows us to close the goal with
+`exact h`.
+-/
+
+/- Prove: x = 37 implies x = 37. -/
+example (x : ℕ) : x = 37 → x = 37 := by
+  intro h
+  exact h
+/- Proof:
+```
+intro h
+exact h
+```
+
+Explanation: In this example, we are proving an implication of the form P implies Q. We start with
+`intro h` tactic to assume the hypothesis and assign its proof to `h`. We then close the goal with
+`exact h` because the hypothesis is equal to the conclusion.
+-/
+
 
 /- Template -/
 /- Prove: -/
