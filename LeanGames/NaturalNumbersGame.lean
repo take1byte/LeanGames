@@ -873,6 +873,45 @@ We notice that `zero_ne_one` is a special case of `zero_ne_succ` when `a = 0` an
 with `exact` tactic.
 -/
 
+/- Prove: 1 is not equal to 0. -/
+theorem one_ne_zero : (1 : ℕ) ≠ 0 := by
+  symm
+  exact zero_ne_one
+/- Proof:
+```
+symm
+exact zero_ne_one
+```
+
+Explanation: We use `symm` tactic to interchange the lhs and the rhs in the goal and complete the
+goal with `exact` tactic.
+-/
+
+/- Prove: 2 + 2 is not equal to 5. -/
+example : Nat.succ (Nat.succ 0) + Nat.succ (Nat.succ 0) ≠
+          Nat.succ (Nat.succ (Nat.succ (Nat.succ (Nat.succ 0)))) := by
+  intro h
+  rw [Nat.add_succ, Nat.add_succ, Nat.add_zero] at h
+  repeat apply succ_inj at h
+  apply zero_ne_succ 0
+  exact h
+/- Proof:
+```
+intro h
+rw [add_succ, add_succ, add_zero] at h
+repeat apply succ_inj at h
+apply zero_ne_succ 0
+exact h
+```
+
+Explanation: To prove that `a` is not equal to `b` in Lean 4, we must prove that `a = b` implies
+`False`. We start by introducing the hypothesis of equality with `intro` tactic. We then rewrite
+the left hand side of the hypothesis into four applications of `Nat.succ` to `0` using `add_succ`
+tactic twice and `add_zero` tactic once. We then apply `succ_inj` tactic four times to rewrite
+the hypothesis into `0 = Nat.succ 0`. We apply `zero_ne_succ 0` to rewrite the hypothesis into
+`False`. We close the goal with `exact` tactic.
+-/
+
 
 /- Template -/
 /- Prove: -/
