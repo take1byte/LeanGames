@@ -912,6 +912,107 @@ the hypothesis into `0 = Nat.succ 0`. We apply `zero_ne_succ 0` to rewrite the h
 `False`. We close the goal with `exact` tactic.
 -/
 
+/- ## Algorithm World -/
+/- Prove: If a, b, c are natural numbers, then a + (b + c) = b + (a + c). -/
+theorem add_left_comm (a b c : ℕ) : a + (b + c) = b + (a + c) := by
+  rw[Nat.add_comm b (a + c), Nat.add_assoc a c b, Nat.add_comm c b]
+/- Proof:
+```
+rw[add_comm b (a + c), add_assoc a c b, add_comm c b]
+rfl
+```
+
+Explanation: We first rewrite the rhs from `b + (a + c)` into `(a + c) + b` using `add_comm` tactic.
+We then rewrite `(a + c) + b` into `a + (c + b)` using `add_assoc` tactic. Finally, we rewrite
+`a + (c + b)` into `a + (b + c)` with `add_comm` tactic applied to the sub-term `(c + b)` and close
+the goal with `rfl`.
+-/
+
+/- Prove: If a,b, c and d are numbers, we have (a + b) + (c + d) = ((a + c) + d) + b. -/
+example (a b c d : ℕ) : a + b + (c + d) = a + c + d + b := by
+  repeat rw [Nat.add_assoc]
+  rw [add_left_comm b c d]
+  rw [Nat.add_comm b d]
+
+/- Proof:
+```
+repeat rw [add_assoc]
+rw [add_left_comm b c]
+rw [add_comm b d]
+rfl
+```
+
+Explanation: We first rewrite the goal into `a + (b + (c + d)) = a + (c + (d + b))` using
+`add_assoc` tactic. We then rewrite `a + (b + (c + d))` into `a + (c + (b + d))` using
+`add_left_comm` tactic applied to the sub-term `b + (c + d)`. Finally, we rewrite
+`a + (c + (b + d))` into `a + (c + (d + b))` using `add_comm` tactic applied to the sub-term
+`(b + d)` and close the goal with `rfl`.
+-/
+
+/- Prove: If `a, b, ..., h` are arbitrary natural numbers, we have
+`(d + f) + (h + (a + c)) + (g + e + b) = a + b + c + d + e + f + g + h`. -/
+example (a b c d e f g h : ℕ) :
+  (d + f) + (h + (a + c)) + (g + e + b) = a + b + c + d + e + f + g + h := by
+  simp only [add_left_comm, Nat.add_comm]
+/- Proof:
+```
+simp only [add_left_comm, add_comm]
+```
+
+Explanation: We will use Lean 4 simplifier to complete this goal automatically instead of manually
+appying `add_assoc` and `add_comm` lots of time. The simplifier searches through different ways of
+rewriting the goal with the aim of completing it. The simplifier is invoked by `simp` tactic.
+
+In general, `simp` can be slow because it searches through a large number of tactics and ways of
+combining them into proofs. We can speed up the search by constraining it to a minimal set of
+tactics we want Lean to use for simplification, e.g., `simp only [add_left_comm, Nat.add_comm]`
+tells Lean simplifier to use only `add_left_comm` and `Nat.add_comm`.
+
+If we aren't sure what tactics suffice for simplifying a given expression, we can run `simp?`,
+which will instruct Lean simplifier to find the tactics for us.
+-/
+
+/- Prove: If `a, b, ..., h` are arbitrary natural numbers, we have
+`(d + f) + (h + (a + c)) + (g + e + b) = a + b + c + d + e + f + g + h` by defining a new tactic
+`simp_add` that simplifies the goal using a minimal set of tactics. -/
+
+macro "simp_add" : tactic => `(tactic|(simp only [add_left_comm, Nat.add_comm]))
+
+example (a b c d e f g h : ℕ) :
+  (d + f) + (h + (a + c)) + (g + e + b) = a + b + c + d + e + f + g + h := by
+  simp_add
+/- Proof:
+```
+simp_add
+```
+
+Explanation: First, we use Lean 4 `macro` feature to define a new tactic `simp_add`. We the use
+this tactic to close the goal in our example.
+
+For an overview of macros, take a look [here](https://lean-lang.org/lean4/doc/macro_overview.html),
+and for tactics, see [here](https://github.com/leanprover/lean4/blob/master/doc/tactics.md) and
+[here](https://leanprover.github.io/theorem_proving_in_lean4/tactics.html).
+-/
+
+/- Prove: If `succ(a) = succ(b)` then `a = b`. You may not use `succ_inj`. You may use `pred_succ`,
+which is the proof that `pred (succ n) = n`.
+-/
+example (a b : ℕ) (h : Nat.succ a = Nat.succ b) : a = b := by
+  rw [← Nat.pred_succ a]
+  rw [← Nat.pred_succ b]
+  rw [h]
+/- Proof:
+```
+rw [← pred_succ a]
+rw [← pred_succ b]
+rw [h]
+rfl
+```
+
+Explanation: We first rewrite the goal into `pred (succ a) = pred (succ b)` by applying `pred_succ`
+tactic in reverse to `a` and `b`. We then use the hypothesis `h` to rewrite `succ a` into `succ b`
+in the new goal and obtain a new goal `pred (succ b) = pred (succ b)`, which we close by `rfl`.
+-/
 
 /- Template -/
 /- Prove: -/
