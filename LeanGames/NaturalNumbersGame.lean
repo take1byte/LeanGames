@@ -780,7 +780,10 @@ The `apply e at h` tactic applies the implications from `e` to hypothesis `h`. I
 theorem four_eq_succ_three : 4 = Nat.succ 3 := by rfl
 
 theorem succ_inj (a : ℕ) (b : ℕ) : Nat.succ a = Nat.succ b -> a = b := by
-  skip
+  intro h
+  rw [← Nat.pred_succ a]
+  rw [← Nat.pred_succ b]
+  rw [h]
 
 example (x : ℕ) (h : x + 1 = 4) : x = 3 := by
   rw [four_eq_succ_three] at h
