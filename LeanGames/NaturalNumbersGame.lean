@@ -783,7 +783,7 @@ theorem succ_inj (a : ℕ) (b : ℕ) : Nat.succ a = Nat.succ b -> a = b := by
   intro h
   rw [← Nat.pred_succ a]
   rw [← Nat.pred_succ b]
-  rw [h]
+  `rw [h]`
 
 example (x : ℕ) (h : x + 1 = 4) : x = 3 := by
   rw [four_eq_succ_three] at h
@@ -1015,6 +1015,38 @@ rfl
 Explanation: We first rewrite the goal into `pred (succ a) = pred (succ b)` by applying `pred_succ`
 tactic in reverse to `a` and `b`. We then use the hypothesis `h` to rewrite `succ a` into `succ b`
 in the new goal and obtain a new goal `pred (succ b) = pred (succ b)`, which we close by `rfl`.
+-/
+
+/- Prove: `Nat.succ a` is not equal to `0`. -/
+def is_zero : Nat -> Bool
+| 0 => True
+| Nat.succ _ => False
+
+theorem is_zero_succ (n : ℕ): is_zero (Nat.succ n) = False := by
+  skip
+
+theorem succ_ne_zero (a : ℕ) : Nat.succ a ≠ 0 := by
+  intro h
+  rw[← is_zero_succ a]
+  rw[h]
+  trivial
+/- Proof:
+```
+intro h
+rw[← is_zero_succ a]
+rw[h]
+trivial
+```
+
+Explanation: In this level, we are asked to use `is_zero` definition and `is_zero_succ` theorem to
+prove that `Nat.succ a` is not equal to `0`.
+
+First, we use `intro` tactic to state the hypothesis we want to falsify, which is `Nat.succ a = 0`
+and bind it to `h`. We then rewrite the goal, which is `False` into `is_zero (Nat.succ a) = true`
+using `is_zero_succ` theorem. We apply the hypothesis `h` to rewrite our goal into
+`is_zero 0 = true` by rewriting the term `Nat.succ a` into `0`. We close the goal
+using `trivial` tactic because `is_zero 0 = true` is `True` follows from the definition of
+`is_zero`.
 -/
 
 /- Template -/
