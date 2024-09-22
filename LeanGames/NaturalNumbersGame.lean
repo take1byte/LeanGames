@@ -1,6 +1,7 @@
 import Mathlib.Tactic.NthRewrite
 import Mathlib.Init.Data.Nat.Lemmas
 import Mathlib.Tactic.applyAt
+import Mathlib.Tactic.Contrapose
 
 /- ## Tutorial World -/
 
@@ -1048,6 +1049,25 @@ using `is_zero_succ` theorem. We apply the hypothesis `h` to rewrite our goal in
 using `trivial` tactic because `is_zero 0 = true` is `True` follows from the definition of
 `is_zero`.
 -/
+
+/- Prove: If `a` is not equal to `b` then `Nat.succ a` is not equal to `Nat.succ b`. -/
+theorem succ_ne_succ (m n : ℕ) (h : m ≠ n) : Nat.succ m ≠ Nat.succ n := by
+  contrapose! h
+  apply succ_inj m n at h
+  exact h
+/- Proof:
+```
+contrapose! h
+apply succ_inj m n at h
+exact h
+```
+
+Explanation: First, we use `contrapose!` tactic to rewrite the implication we want to prove into
+its logically equivalent contrapositive: `Nat.succ m = Nat.succ n` implies `m = n`. We then apply
+`succ_inj` to rewrite our new hypothesis `Nat.succ m = Nat.succ n` into `m = n` and close the goal
+with `exact` tactic.
+-/
+
 
 /- Template -/
 /- Prove: -/
