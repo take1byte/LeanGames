@@ -1068,6 +1068,55 @@ its logically equivalent contrapositive: `Nat.succ m = Nat.succ n` implies `m = 
 with `exact` tactic.
 -/
 
+/- Prove: 20 + 20 = 40. -/
+instance instDecidableEq : DecidableEq ℕ
+  | 0, 0 => isTrue <| by
+    show 0 = 0
+    rfl
+  | Nat.succ m, 0 => isFalse <| by
+    show Nat.succ m ≠ 0
+    exact succ_ne_zero m
+  | 0, Nat.succ n => isFalse <| by
+    show 0 ≠ Nat.succ n
+    exact zero_ne_succ n
+  | Nat.succ m, Nat.succ n =>
+    match instDecidableEq m n with
+    | isTrue (h : m = n) => isTrue <| by
+      show Nat.succ m = Nat.succ n
+      rw [h]
+    | isFalse (h : m ≠ n) => isFalse <| by
+      show Nat.succ m ≠ Nat.succ n
+      exact succ_ne_succ m n h
+
+example : (20 : ℕ) + 20 = 40 := by decide
+/- Proof:
+```
+decide
+```
+
+Explanation: `decide` is a tactic that attempts to close a goal by finding an algorithm it can
+run to produce a proof. In the case of our example, `20 + 20 = 40`, the `decide` tactic uses the
+fact that equality of natural numbers can be proven algorithmically as shown in the algorithm
+above the example. The `instance` keyword declares that `instDecidableEq` is an instance of
+`DecidableEq ℕ` typeclass. `DecidableEq ℕ` asserts that natural numbers have decidable equality.
+
+Note that the declaration of type `(20 : ℕ)` in the example is necessary because [numerals are
+polymorphic in Lean 4](https://lean-lang.org/theorem_proving_in_lean4/type_classes.html#numerals).
+-/
+
+/- Prove: 2 + 2 is not equal to 5. -/
+example : (2 : ℕ) + 2 ≠ 5 := by decide
+/- Proof:
+```
+decide
+```
+
+Explanation: Inequality of natural numbers is decidable by the same algorithm as in the previous
+example. Therefore, `decide` tactic is able to close the goal.
+-/
+
+
+
 
 /- Template -/
 /- Prove: -/
