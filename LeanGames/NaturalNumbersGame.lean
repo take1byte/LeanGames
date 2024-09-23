@@ -1216,6 +1216,41 @@ rewrite `h` into `(n + a) + 1 = (n + b) + 1`. Next, we apply `succ_inj` to rewri
 close the goal with `exact`.
 -/
 
+/- Prove: `x + y = y` implies `x = 0`. -/
+theorem add_left_eq_self (x y : ℕ) : x + y = y → x = 0 := by
+  nth_rw 2 [← Nat.zero_add y]
+  exact add_right_cancel x 0 y
+
+/- Proof:
+```
+nth_rewrite 2 [← zero_add y]
+exact add_right_cancel x 0 y
+```
+
+Explanation: First, we observe that the goal can be rewritten into a special case of
+`add_left_cancel` by adding `0` on the left of the second occurrence of `y`. We do this rewrite
+with `nth_rw 2` tactic. We then use `exact` tactic to close the goal as a special case of
+`add_right_cancel`.
+-/
+
+
+/- Prove: `x + y = x` implies `y = 0`. -/
+theorem add_right_eq_self (x y : ℕ) : x + y = x → y = 0 := by
+  rw[Nat.add_comm x y]
+  exact add_left_eq_self y x
+/- Proof:
+```
+rw[add_comm x y]
+exact add_left_eq_self y x
+```
+
+Explanation: We observe that we can rewrite the goal into `add_left_eq_self y x` by rewriting
+`x + y` into `y + x`. To elaborate, `add_left_eq_self y x` is the proof that `y + x = x` implies
+`y = 0`, which would prove our goal except that our goal has `x + y` instead of `y + x`. We use
+`Nat.add_comm x y` to rewrite our goal so the proof `add_left_eq_self y x` can close it.
+-/
+
+
 /- Template -/
 /- Prove: -/
 /- Proof:
