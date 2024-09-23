@@ -1115,8 +1115,106 @@ Explanation: Inequality of natural numbers is decidable by the same algorithm as
 example. Therefore, `decide` tactic is able to close the goal.
 -/
 
+/- ## Advanced Addition World -/
+/- Prove: For all natural numbers `a, b, n`, we have `a + n = b + n` implies `a = b`. -/
+theorem add_right_cancel (a b n : ℕ) : a + n = b + n → a = b := by
+  induction n with
+  | zero =>
+    intro h
+    rw[Nat.add_zero, Nat.add_zero] at h
+    exact h
+  | succ n ih =>
+    intro h
+    repeat rw[← Nat.add_assoc, ← Nat.succ_eq_add_one] at h
+    apply succ_inj at h
+    apply ih at h
+    exact h
+/- Proof:
+```
+induction n with n ih
+intro h
+repeat rw[add_zero] at h
+exact h
+intro h
+repeat rw[succ_eq_add_one] at h
+repeat rw[← add_assoc, ← succ_eq_add_one] at h
+apply succ_inj at h
+apply ih at h
+exact h
+```
 
+Explanation: The proof is by induction on h. For the base case we have to prove that `a + 0 = b + 0`
+implies `a = b`. We introduce the hypothesis as `h` and rewrite it from `a + 0 = b + 0` to `a = b`
+with `add_zero` tactic applied twice. We then close the base case goal with `exact` tactic because
+the hypothesis and the goal are now equal.
 
+For the inductive step, we assume `a + n = b + n` implies `a = b` and we have to prove that
+`a + Nat.succ n = b + Nat.succ n` implies `a = b`. We start the proof by introducing the hypothesis
+`a + Nat.succ n = b + Nat.succ n` as `h`. In the server version of then proof, we rewrite
+`Nat.succ n` as  `n + 1` and in the Lean 4 this rewrite is not necessary because Lean 4 expands
+`Nat.succ` into `+1` automatically. We then apply `add_assoc` tactic to rewrite `a + (n + 1)` into
+`(a + n) + 1` and `b + (n + 1)` into `(b + n) + 1`. We then apply `succ_inj` at `h` to rewrite `h`
+into `a + n = b + n`. We then apply `ih` at `h` to further rewrite `h` into `a = b`. We close the
+goal with `exact` tacitc.
+-/
+
+/- Prove: For all natural numbers `a, b, n`, we have `n + a = n + b` implies `a = b`. -/
+
+theorem add_left_cancel (a b n : ℕ) : n + a = n + b → a = b := by
+  repeat rw[Nat.add_comm n]
+  exact add_right_cancel a b n
+
+theorem add_left_cancel_second_proof (a b n : ℕ) : n + a = n + b → a = b := by
+  induction n with
+  | zero =>
+  intro h
+  repeat rw[Nat.zero_add] at h
+  exact h
+  | succ n ih =>
+  intro h
+  repeat rw[Nat.add_assoc] at h
+  rw[Nat.add_comm 1 a, Nat.add_comm 1 b] at h
+  repeat rw[← Nat.add_assoc] at h
+  apply succ_inj at h
+  apply ih at h
+  exact h
+/- Proof:
+
+First proof:
+```
+repeat rw[add_comm n]
+exact add_right_cancel a b n
+```
+
+Second proof:
+```
+induction n with n ih
+intro h
+repeat rw[zero_add] at h
+exact h
+intro h
+repeat rw[succ_eq_add_one, add_assoc, add_assoc] at h
+rw[add_comm 1 a, add_comm 1 b] at h
+rw[← add_assoc, ← add_assoc] at h
+rw[← succ_eq_add_one, ← succ_eq_add_one] at h
+apply succ_inj at h
+apply ih at h
+exact h
+```
+
+Explanation: We can use `add_comm` to rewrite the goal into `a + n = b + n` implies `a = b`, which
+we can close with `add_right_cancel` that we proved in the previous level.
+
+Alternatively, we can use induction and give a proof similar to that of `add_right_cancel`. In the
+base case, we introduce the hypothesis as `h` and apply `zero_add` tactic twice to rewrite `h` into
+the goal `a = b`.
+
+In the inductive step, we introduce the hypothesis `n + 1 + a = n + 1 + b` implies `a = b` as `h`.
+We then use associativity and commutativity of addition tactics, `add_assoc` and `add_comm`, to
+rewrite `h` into `(n + a) + 1 = (n + b) + 1`. Next, we apply `succ_inj` to rewrite `h` further into
+`n + a = n + b`. We now apply the inductive hypothesis `ih` at `h` to rewrite `h` into `a = b` and
+close the goal with `exact`.
+-/
 
 /- Template -/
 /- Prove: -/
