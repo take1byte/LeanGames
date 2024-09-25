@@ -2,6 +2,8 @@ import Mathlib.Tactic.NthRewrite
 import Mathlib.Init.Data.Nat.Lemmas
 import Mathlib.Tactic.applyAt
 import Mathlib.Tactic.Contrapose
+import Mathlib.Tactic.Use
+import Mathlib.Order.Defs
 
 /- ## Tutorial World -/
 
@@ -1299,6 +1301,63 @@ rewriting `a + b` into `b + a` and exchanging the roles of `a` and `b`. The firs
 with `Nat.add_comm` and the exchange of roles of `a` and `b` is done with changing the order of
 parameters in `add_right_eq_zero` from `a b` into `b a`.
 -/
+
+/- ## ≤ World -/
+/- This world starts with a definition: For natural numbers `a, b`, we write `a ≤ b` if and only
+if there exists a natural number `c` such that `b = a + c`. In Lean 4, `a ≤ b` is notation for
+`∃ c, b = a + c`.
+-/
+
+
+/- Prove: If `x` is a natural number, then `x ≤ x`. -/
+theorem _le_refl (x : ℕ) : ∃ c : ℕ, x = x + c := by
+  use 0
+  rw[Nat.add_zero]
+/- Proof:
+```
+use 0
+rw[add_zero]
+rfl
+```
+
+
+Explanation: For this proof, we need to import the `use` tactic from `Mathlib`. This is done with
+the statement `import Mathlib.Tactic.Use`. Tactic `use` in Lean 4, expects an `∃` statement, which
+is why we expand the definition of `≤` in the statement of the theorem.
+
+In the game server, we start the proof with `use 0`, which rewrites the goal into `x + 0 = x`. We
+then use `add_zero` tactic to rewrite the goal into `x = x`, which we close with `rfl`.
+-/
+
+/- Prove:  If `x` is a natural number, then `0 ≤ x`. -/
+theorem zero_le (x : ℕ) : ∃ c, x = 0 + c := by
+  use x
+  rw[Nat.zero_add]
+/- Proof:
+```
+use x
+rw[zero_add]
+rfl
+```
+
+Explanation: `0 ≤ x` is, by definition, `∃ c, x = 0 + c`. We invoke `use x` to rewrite the goal
+into `x = 0 + x`. We then use `Nat.zero_add` to further rewrite the goal into `x = x`, which is
+closed by `rfl`.
+-/
+
+/- Prove: If `x` is a number, then `x ≤ succ(x)`. -/
+theorem le_succ_self (x : ℕ) : ∃ c, Nat.succ x = x + c := by
+  use 1
+/- Proof:
+```
+use 1
+exact succ_eq_add_one x
+```
+
+Explanation: In Lean 4, the goal is closed with `use 1`. In the game server, `use 1` rewrites
+the goal into `succ x = x + 1`, which we can close with `exact succ_eq_add_one x`.
+-/
+
 
 /- Template -/
 /- Prove: -/
