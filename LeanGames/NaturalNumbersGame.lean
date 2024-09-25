@@ -1250,6 +1250,55 @@ Explanation: We observe that we can rewrite the goal into `add_left_eq_self y x`
 `Nat.add_comm x y` to rewrite our goal so the proof `add_left_eq_self y x` can close it.
 -/
 
+/- Prove: If `a + b = 0` then `a = 0`. -/
+theorem add_right_eq_zero (a b : ℕ) : a + b = 0 → a = 0 := by
+  cases b
+  rw[Nat.add_zero]
+  intro h
+  exact h
+  intro h
+  apply succ_ne_zero at h
+  cases h
+/- Proof:
+```
+cases b with d
+rw[add_zero]
+intro h
+exact h
+rw[add_succ]
+intro h
+apply succ_ne_zero at h
+cases h
+```
+
+Explanation: We use `cases` tactic to split our proof into two cases: `b = 0` and `b = Nat.succ d`
+for some `d ∈ ℕ`. When `b = 0`, we have to show `a + 0 = 0` implies `a = 0`. We rewrite `a + 0` into
+`a` with `add_zero` tactic, introduce the hypothesis `a = 0` as `h`, and close the goal with
+`exact` because the hypothesis is identical to the conclusion.
+
+When `b = Nat.succ d`, we will show that the hypothesis `h: a + Nat.succ d = 0` is `False`. We will
+use `cases h` to close the goal. This works because when `h` is `False`, any implication `h → q` is
+automatically `True`, which means there's nothing to prove. Now, getting to the proof, we first
+introduce the hypothesis as `h` and then rewrite it into `Nat.succ (a + d)`. Next, we use
+`succ_ne_zero` applied at `h` to conclude that `h` is `False`. Finally, we close the goal with
+`cases h`.
+-/
+
+/- Prove: If `a + b = 0` then `b = 0`. -/
+theorem add_left_eq_zero (a b : ℕ) : a + b = 0 → b = 0 := by
+  rw[Nat.add_comm]
+  exact add_right_eq_zero b a
+/- Proof:
+```
+rw[add_comm]
+exact add_right_eq_zero b a
+```
+
+Explanation: We observe that `add_left_eq_zero` can be rewritten into `add_right_eq_zero` by
+rewriting `a + b` into `b + a` and exchanging the roles of `a` and `b`. The first rewrite is done
+with `Nat.add_comm` and the exchange of roles of `a` and `b` is done with changing the order of
+parameters in `add_right_eq_zero` from `a b` into `b a`.
+-/
 
 /- Template -/
 /- Prove: -/
