@@ -3,7 +3,6 @@ import Mathlib.Init.Data.Nat.Lemmas
 import Mathlib.Tactic.applyAt
 import Mathlib.Tactic.Contrapose
 import Mathlib.Tactic.Use
-import Mathlib.Order.Defs
 
 /- ## Tutorial World -/
 
@@ -1304,10 +1303,9 @@ parameters in `add_right_eq_zero` from `a b` into `b a`.
 
 /- ## ≤ World -/
 /- This world starts with a definition: For natural numbers `a, b`, we write `a ≤ b` if and only
-if there exists a natural number `c` such that `b = a + c`. In Lean 4, `a ≤ b` is notation for
-`∃ c, b = a + c`.
+if there exists a natural number `c` such that `b = a + c`. In this World, `a ≤ b` is notation for
+`∃ c, b = a + c` per https://github.com/ImperialCollegeLondon/natural_number_game/blob/6b30156c5025760d1ed8753de3b44a075e2f8a51/src/mynat/le.lean#L8/.
 -/
-
 
 /- Prove: If `x` is a natural number, then `x ≤ x`. -/
 theorem _le_refl (x : ℕ) : ∃ c : ℕ, x = x + c := by
@@ -1356,6 +1354,40 @@ exact succ_eq_add_one x
 
 Explanation: In Lean 4, the goal is closed with `use 1`. In the game server, `use 1` rewrites
 the goal into `succ x = x + 1`, which we can close with `exact succ_eq_add_one x`.
+-/
+
+/- Prove: If `x ≤ y` and `y ≤ z`, then `x ≤ z`. -/
+--theorem _le_trans (x y z : ℕ) (hxy : x ≤ y) (hyz : y ≤ z) : x ≤ z := by skip
+/- Proof:
+```
+cases hxy with a ha
+cases hyz with b hb
+use (a + b)
+rw[hb, ha, add_assoc]
+rfl
+```
+
+Explanation: We first rewrite hypothesis `hxy` into `ha: y = x + a` and `hyz` into `hb : z = x + b`
+using `cases` tactic. We then rewrite the goal `x ≤ z` into `z = x + (a + b)` with `use` tactic.
+Next, we rewrite `z` in the new goal using `hb` and `ha` to get `x + a + b = x + (a + b)`. Finally,
+we apply `add_assoc` and `rfl` to close the goal.
+-/
+
+
+/- Prove:  If `x ≤ 0`, then `x = 0`. -/
+/- theorem le_zero (x : ℕ) (hx : x ≤ 0) : x = 0 := by -/
+/- Proof:
+```
+cases hx with a h
+symm at h
+apply (add_right_eq_zero x a) at h
+exact h
+```
+
+Explanation: We start the proof with `cases` tactic to rewrite hypothesis `hx` using the definition
+of `≤`. The new hypothesis is ` 0 = x + a`, which we rewrite into `x + a = 0` with `symm`
+tactic. Next, we apply `add_right_eq_zero` to rewrite the hypothesis into `x = 0`. We close the
+goal with `exact`.
 -/
 
 
