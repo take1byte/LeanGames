@@ -1390,6 +1390,53 @@ tactic. Next, we apply `add_right_eq_zero` to rewrite the hypothesis into `x = 0
 goal with `exact`.
 -/
 
+/- Prove: If `x ≤ y` and `y ≤ x`, then `x = y`. -/
+/- theorem le_antisymm (x y : ℕ) (hxy : x ≤ y) (hyx : y ≤ x) : x = y := by -/
+/- Proof:
+```
+cases hxy with a ha
+cases hyx with b hb
+rw[ha] at hb
+nth_rewrite 1 [← add_zero x] at hb
+rw[add_assoc] at hb
+apply add_left_cancel 0 (a+b) x at hb
+symm at hb
+apply add_right_eq_zero at hb
+rw[hb, add_zero] at ha
+symm at ha
+exact ha
+```
+
+Explanation: First, we use `cases` tactic to rewrite the hypotheses as `ha: y = x + a` and
+`hb: x = y + b`. We then use `ha` to rewrite `hb` into `x = x + a + b`. We rewrite the first
+occurrence of `x` into `x + 0` with precision rewriting tactic `nth_rewrite` and `add_zero` in
+reverse. Next, we rewrite `x + a + b` into `x + (a + b)` with `add_assoc` tactic. Now, `hb` is
+`x + 0 = x + (a + b)` and we apply `add_left_cancel` to rewrite `hb` into `0 = a + b`. Next, we
+use `symm` tactic to rewrite `0 = a + b` into `a + b = 0` and apply `add_right_eq_zero` to rewrite
+`hb` into `a = 0`. Now, we use `hb` and `add_zero` tactic to rewrite `ha:  y = x + a` into `y = x`.
+Finally, we apply `symm` and close the goal with `exact`.
+-/
+
+/- Prove: If `x = 37` or `y = 42`, then `y = 42` or `x = 37`.-/
+/- example (x y : ℕ) (h : x = 37 ∨ y = 42) : y = 42 ∨ x = 37 := by -/
+/- Proof:
+```
+cases h with hx hy
+right
+rw[hx]
+rfl
+left
+rw[hy]
+rfl
+```
+
+Explanation: We start the proof with `cases` tactic to split the `or` in the hypothesis `h` into
+two branches. We then use `right` tactic to select the branch `x = 37`. We rewrite the goal using
+`hx` and close `37 = 37` with `rfl`. Next, we select the branch `y = 42` with `left` tactic,
+rewrite the goal with `hy`, and close `42 = 42` with `rfl`.
+-/
+
+
 
 /- Template -/
 /- Prove: -/
