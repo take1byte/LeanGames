@@ -1436,6 +1436,55 @@ two branches. We then use `right` tactic to select the branch `x = 37`. We rewri
 rewrite the goal with `hy`, and close `42 = 42` with `rfl`.
 -/
 
+/- Prove:  If `x` and `y` are numbers, then either `x ≤ y` or `y ≤ x`. -/
+/- theorem le_total (x y : ℕ) : x ≤ y ∨ y ≤ x := by -/
+/- Proof:
+```
+induction y with d hd
+right
+exact zero_le x
+cases hd with hdl hdr
+left
+cases hdl
+use (w + 1)
+rw[← add_assoc x w 1, succ_eq_add_one]
+rw[h]
+rfl
+cases hdr with e he
+cases e with a
+rw[add_zero] at he
+left
+rw[he]
+exact le_succ_self d
+right
+use a
+rw[succ_eq_add_one, add_comm a 1, ← add_assoc d 1 a, ← succ_eq_add_one] at he
+exact he
+```
+
+Explanation: Our proof is by induction on `y`. The base case is `x ≤ 0 ∨ 0 ≤ x`. We choose the right
+branch with `right` tactic because `x ∈ ℕ` and close the goal with `exact zero_le x`.
+
+The inductive hypothesis is `x ≤ d ∨ d ≤ x` and the goal is `x ≤ succ d ∨ succ d ≤ x`. We split the
+hypothesis into `hdl: x ≤ d` and `hdr: d ≤ x`. We observe that the left branch `x  ≤ succ d` of our
+goal follows from `x ≤ d`, and therefore, we select is with `left` tactic. To prove that `x ≤ d`
+implies `x ≤ succ d`, we use the definition of `≤` to find `w` such that `d = x + w`. This implies
+`d + 1 = x + w + 1`, which proves that `x ≤ succ d`. To write this proof in game server, we first
+use `cases hdl` tactic to rewrite `hdl` into `h: d = x + w`. We then execute `use (w + 1)` tactic
+to rewrite our goal from `x  ≤ succ d` into `succ d = x + (w + 1)`. We further rewrite this into
+`d + 1 = (x + w) + 1`. Next, we apply `h` and our goal becomes `(x + w) + 1 = (x + w) + 1`, which
+we close by rfl.
+
+Next, we need to prove that `hdr: d ≤ x` implies `x ≤ succ d ∨ succ d ≤ x`. We first rewrite `hdr`
+into `he: x = d + e`. Since `he` doesn't immediately imply either `x ≤ succ d` or `succ d ≤ x`, we
+use `cases e with a` to split `he` into cases when `e = 0` and `e = succ a`. When `e = 0`, `he`
+becomes `x = d`, which implies `x ≤ succ d` by `le_succ_self`. When `e = succ a`, `he` becomes
+`x = d + succ a`, which we observe is enough to prove `succ d ≤ x` because we can borrow `+1` from
+`succ a` and add it to `d` to get `succ d`. To execute this strategy, we select the right branch of
+the goal with `right` tactic and rewrite the goal into `x = succ d + a` with `use` tactic. We then
+transfer `+1` from `succ a` to `d` in the hypothesis `he`, which becomes `he: x = succ d + a`. We
+close the goal with `exact` tactic.
+-/
 
 
 /- Template -/
