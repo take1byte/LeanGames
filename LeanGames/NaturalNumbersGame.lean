@@ -785,7 +785,7 @@ theorem succ_inj (a : ℕ) (b : ℕ) : Nat.succ a = Nat.succ b -> a = b := by
   intro h
   rw [← Nat.pred_succ a]
   rw [← Nat.pred_succ b]
-  `rw [h]`
+  rw [h]
 
 example (x : ℕ) (h : x + 1 = 4) : x = 3 := by
   rw [four_eq_succ_three] at h
@@ -1484,6 +1484,104 @@ becomes `x = d`, which implies `x ≤ succ d` by `le_succ_self`. When `e = succ 
 the goal with `right` tactic and rewrite the goal into `x = succ d + a` with `use` tactic. We then
 transfer `+1` from `succ a` to `d` in the hypothesis `he`, which becomes `he: x = succ d + a`. We
 close the goal with `exact` tactic.
+-/
+
+/- Prove: If `succ(x) ≤ succ(y)` then `x ≤ y`. -/
+/- theorem succ_le_succ (x y : ℕ) (hx : succ x ≤ succ y) : x ≤ y := by -/
+/- Proof:
+```
+cases hx with a ha
+rw[succ_eq_add_one, succ_eq_add_one, add_comm y 1, add_comm x 1, add_assoc] at ha
+apply add_left_cancel at ha
+use a
+exact ha
+```
+
+Explanation: Our proof starts by rewriting `hx` as `ha: succ y = succ x + a`. We then rewrite `ha`
+further into ` 1 + y = 1 + (x + a)` and apply `add_left_cancel` to cancel `1`'s on the lhs and rhs.
+We close the goal with `exact`.
+
+The server gives as shorter proof that uses `succ_add` and `succ_inj`:
+```
+cases hx with d hd
+use d
+rw [succ_add] at hd
+apply succ_inj at hd
+exact hd
+```
+-/
+
+/- Prove:  If `x ≤ 1` then either `x = 0` or `x = 1`. -/
+/- theorem le_one (x : ℕ) (hx : x ≤ 1) : x = 0 ∨ x = 1 := by -/
+/- Proof:
+```
+cases hx with a ha
+cases a with b
+rw[add_zero] at ha
+symm at ha
+right
+exact ha
+symm at ha
+rw[add_succ, one_eq_succ_zero] at ha
+apply succ_inj at ha
+apply add_right_eq_zero x b at ha
+left
+exact ha
+```
+
+Explanation: Our proof starts with rewriting `hx` into `ha: 1 = x + a` with `cases` tactic. We then
+use `cases` again to consider two cases `a = 0` and `a = succ b`. When `a = 0`, we rewrite `ha`
+into `x = 1` and select the right branch of the goal with `right` tactic, which we close with
+`exact`. When `a = succ b`, we rewrite `ha` from `1 = x + succ b` to `succ (x + b) = succ 0` and
+apply `succ_inj` to conclude that `x + b = 0`. Therefore, by `add_right_eq_zero` implies that
+`x = 0`. We select the left branch of our goal and close it with `exact`.
+
+The game server has a shorter proof that splits the proof into cases `x = 0` and `x = succ y`:
+```
+cases x with y
+left
+rfl
+rw [one_eq_succ_zero] at hx ⊢
+apply succ_le_succ at hx
+apply le_zero at hx
+rw [hx]
+right
+rfl
+```
+-/
+
+/- Prove: If `x ≤ 2` then `x = 0` or `1` or `2`. -/
+/- theorem le_two (x : ℕ) (hx : x ≤ 2) : x = 0 ∨ x = 1 ∨ x = 2 := by -/
+/- Proof:
+```
+cases x with a
+left
+rfl
+rw[two_eq_succ_one] at hx
+rw[two_eq_succ_one]
+apply succ_le_succ a 1 at hx
+apply le_one a at hx
+cases hx
+right
+left
+rw[one_eq_succ_zero]
+rw[h]
+rfl
+right
+right
+rw[h]
+rfl
+```
+
+Explanation: We start the proof by splitting it into two cases `x = 0` and `x = succ a`. When
+`x = 0`, the goal is `0 = 0 ∨ 0 = 1 ∨ 0 = 2`. We select the right branch with `right` and close the
+goal with `rfl`.  When `x = succ a`, our hypothesis is `hx: succ a ≤ 2` and our goal is
+`succ a = 0 ∨ succ a = 1 ∨ succ a = 2`. To bring `hx` closer to something we can use to prove the
+goal, we rewrite `2` as `succ 1` and apply `succ_le_succ` to rewrite `hx` into `a ≤ 1`. We then
+apply `le_one` to rewrite `hx` into `a = 0 ∨ a = 1`. Next, we consider the left and right branches
+of `hx` one by one using `cases hx`. When `a = 0`, we select the branch `succ a = 1` of the
+goal using `right` and `left` tactics and close it by using the hypothesis `a = 0` and `rfl`. When
+`a = 1`, we select the branch `succ a = succ 1`, apply the hypothesis and close the goal with `rfl`.
 -/
 
 
