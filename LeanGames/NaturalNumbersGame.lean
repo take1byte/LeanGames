@@ -1584,6 +1584,51 @@ goal using `right` and `left` tactics and close it by using the hypothesis `a = 
 `a = 1`, we select the branch `succ a = succ 1`, apply the hypothesis and close the goal with `rfl`.
 -/
 
+/- ## Advanced Multiplication World -/
+/- Prove: -/
+/- theorem mul_le_mul_right (a b t : ℕ) (h : a ≤ b) : a * t ≤ b * t := by -/
+/- Proof:
+```
+cases h with d hd
+use d * t
+rw [hd, add_mul]
+rfl
+```
+
+Explanation: We start the proof by rewriting the hypothesis `h` into `hd: b = a + d`. We then use
+the definition of `≤` to rewrite the goal into `b * t = a * t + d * t` with `use` tactic. Next,
+we rewrite `b` into `a + d` by using `hd` and expand the product `(a + d) * t` into `a * t + d * t`
+using `add_mul` tactic. We close the goal with rfl.
+-/
+
+/- Prove: -/
+/- theorem mul_left_ne_zero (a b : ℕ) (h : a * b ≠ 0) : b ≠ 0 := by -/
+/- Proof:
+```
+contrapose! h
+rw[h, mul_zero]
+rfl
+```
+
+Explanation: We prove the logically equivalent contrapositive, which is `b = 0` implies `a * b = 0`.
+We rewrite `b` into `0` and use `mul_zero` to rewrite the goal into `0 = 0`, which we close with
+`rfl`.
+-/
+
+/- Prove: -/
+/- theorem eq_succ_of_ne_zero (a : ℕ) (ha : a ≠ 0) : ∃ n, a = succ n := by -/
+/- Proof:
+```
+cases a with b
+tauto
+tauto
+```
+
+Explanation: We split the proof into two cases `a = 0` and `a = succ b`. When `a = 0`, our
+hypothesis `h: a ≠ 0` is False, which means we can close the goal with `tauto` tactic because
+`false → Q` is true for any `Q`. When `a = succ b`, our goal is `∃ n, succ b = succ n`, which we can
+close with `tauto` because setting `n = b` makes the statement into a tautology.
+-/
 
 /- Template -/
 /- Prove: -/
