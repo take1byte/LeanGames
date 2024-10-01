@@ -1630,6 +1630,40 @@ hypothesis `h: a ≠ 0` is False, which means we can close the goal with `tauto`
 close with `tauto` because setting `n = b` makes the statement into a tautology.
 -/
 
+/- Prove: -/
+/- theorem one_le_of_ne_zero (a : ℕ) (ha : a ≠ 0) : 1 ≤ a := by -/
+/- Proof:
+```
+apply eq_succ_of_ne_zero at ha
+cases ha
+use w
+rw[succ_eq_add_one, add_comm] at h
+exact h
+```
+
+Explanation: First, we rewrite `ha` into `ha: ∃ n, a = succ n` by applying `eq_succ_of_ne_zero`. We
+further rewrite `ha` into `h: a = succ w` with `cases`. Next, we rewrite the goal into `a = 1 + w`
+with `use w`. Finally, we rewrite the `h` into `a = 1 + w` with `succ_eq_add_one` and `add_comm`,
+and close the goal with `exact`.
+-/
+
+/- Prove: -/
+/- theorem le_mul_right (a b : ℕ) (h : a * b ≠ 0) : a ≤ a * b := by -/
+/- Proof:
+```
+apply mul_left_ne_zero at h
+apply one_le_of_ne_zero b at h
+apply mul_le_mul_right 1 b a at h
+rw[one_mul, mul_comm] at h
+exact h
+```
+
+Explanation: First, we apply `mul_left_ne_zero` to `h` to rewrite `h` into `h: b ≠ 0`. We then
+apply `one_le_of_ne_zero` to rewrite `h` into `h: 1 ≤ b`. Next, we `mul_le_mul_right` to `h` with
+multiple `a` to rewrite `h` into  `1 * a ≤ b * a`. We then rewrite `h` into `a ≤ a * b` with
+`one_mul` and `mul_comm` and close the goal with `exact`.
+-/
+
 /- Template -/
 /- Prove: -/
 /- Proof:
