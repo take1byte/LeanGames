@@ -1664,6 +1664,36 @@ multiple `a` to rewrite `h` into  `1 * a ≤ b * a`. We then rewrite `h` into `a
 `one_mul` and `mul_comm` and close the goal with `exact`.
 -/
 
+/- Prove: -/
+/- theorem mul_right_eq_one (x y : ℕ) (h : x * y = 1) : x = 1 := by -/
+/- Proof:
+```
+have h2: x * y ≠ 0
+rw[h]
+exact one_ne_zero
+apply (le_mul_right x y) at h2
+rw[h] at h2
+apply le_one x at h2
+cases h2 with h0 h1
+rw[h0, zero_mul, one_eq_succ_zero] at h
+symm at h
+tauto
+exact h1
+```
+
+Explanation: To prove `x = 1`, we will show `x ≤ 1` and use `le_one` tactic. To show `x ≤ 1`, we
+will use `le_mul_right` tactic. To use `le_mul_right`, we need the hypothesis `x * y ≠ 0`. We
+introduce this hypothis as `h2` with `have` tactic and prove it first. We rewrite `x * y ≠ 0` into
+`1 ≠ 0` using `h` and close the goal for `h2` with `exact one_ne_zero`. Next, we apply
+`le_mul_right` at `h2` and rewrite `h2` into  `x ≤ x * y`. We then rewrite `h2` further into
+`x ≤ 1` using `h` and apply `le_one` tactic at `h2` to conclude that `x = 0 ∨ x = 1`. We split the
+two branches using `cases` tacitc. When `x = 0`, we rewrite `h` into `succ 0 = 0` using `zero_mul`,
+`one_eq_succ_zero`, and `symm` tactics. Since `succ 0 ≠ 0`, we close this sub-goal with `tauto`
+tactic. Finally, we close the main goal with `exact` tactic because the second branch `x = 1` of
+`h1` is equal to the goal.
+-/
+
+
 /- Template -/
 /- Prove: -/
 /- Proof:
