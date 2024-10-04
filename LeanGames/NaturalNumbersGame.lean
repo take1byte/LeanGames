@@ -1693,6 +1693,26 @@ tactic. Finally, we close the main goal with `exact` tactic because the second b
 `h1` is equal to the goal.
 -/
 
+/- Prove: -/
+/- theorem mul_ne_zero (a b : ℕ) (ha : a ≠ 0) (hb : b ≠ 0) : a * b ≠ 0 := by -/
+/- Proof:
+```
+apply eq_succ_of_ne_zero a at ha
+cases ha with x hx
+apply eq_succ_of_ne_zero b at hb
+cases hb with y hy
+rw[hx, hy, mul_succ]
+nth_rewrite 2 [succ_eq_add_one]
+rw[← add_assoc, ← succ_eq_add_one]
+exact succ_ne_zero (succ x * y + x)
+```
+
+Explanation: We will show that `a * b` can be written as `succ` of a natural number and apply
+`succ_ne_zero`. First, we apply `eq_succ_of_ne_zero` and `cases` to `ha` and `hb` to rewrite them
+into `hx: a = succ x` and `hy: b = succ y`. We then use `hx` and `hy` to rewrite the goal into
+`succ x * y + succ x ≠ 0`. We then use `succ_eq_add_one` and `add_assoc` to rewrite the goal into
+`succ (succ x * y + x)`. We close the goal with `succ_ne_zero (succ x * y + x)`.
+-/
 
 /- Template -/
 /- Prove: -/
