@@ -1714,6 +1714,20 @@ into `hx: a = succ x` and `hy: b = succ y`. We then use `hx` and `hy` to rewrite
 `succ (succ x * y + x)`. We close the goal with `succ_ne_zero (succ x * y + x)`.
 -/
 
+/- Prove: -/
+/- theorem mul_eq_zero (a b : ℕ) (h : a * b = 0) : a = 0 ∨ b = 0 := by -/
+/- Proof:
+```
+contrapose! h
+cases h with ha hb
+exact mul_ne_zero a b ha hb
+```
+
+Explanation: We recognize that this theorem is the contrapositive of `mul_ne_zero`. We apply
+`contrapose!` to `h`, split `a ≠ 0 ∧ b ≠ 0` into `ha: a ≠ 0` and `hb: b ≠ 0`  with `cases`, and
+use `exact mul_ne_zero` to close the goal.
+-/
+
 /- Template -/
 /- Prove: -/
 /- Proof:
