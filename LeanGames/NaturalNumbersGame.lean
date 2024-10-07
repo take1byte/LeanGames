@@ -1728,6 +1728,64 @@ Explanation: We recognize that this theorem is the contrapositive of `mul_ne_zer
 use `exact mul_ne_zero` to close the goal.
 -/
 
+/- Prove: -/
+/- theorem mul_left_cancel (a b c : ℕ) (ha : a ≠ 0) (h : a * b = a * c) : b = c := by  -/
+/- Proof:
+```
+induction b with d hd generalizing c
+rw[mul_zero] at h
+symm at h
+apply mul_eq_zero a c at h
+cases h with az cz
+tauto
+symm
+exact cz
+cases c with e
+rw[mul_zero] at h
+apply mul_eq_zero a (succ d) at h
+cases h with hl hr
+tauto
+exact hr
+repeat rw[mul_succ] at h
+apply add_right_cancel at h
+apply hd at h
+rw[h]
+rfl
+```
+
+Explanation: We use induction on `b` to prove the following statement
+`∀ c ∈ ℕ, a * b = a * c → b = c`. Having `c` be any natural number is crucial for us to be able to
+apply the inductive hypothesis. The syntax for letting `c` vary over its domain is `generalizing c`.
+
+The base case is `a ≠ 0` and  `h: a * 0 = a * c` implies `0 = c`. We rewrite `h` into `a * c = 0`,
+use `mul_eq_zero` to conclude that `a = 0` or `c = 0`, and consider each branch separately using
+`cases`. We close the branch `a = 0` with `tauto` because one of our hypotheses is `a ≠ 0`. The
+branch `c = 0` gives us the goal using `exact`.
+
+The inductive hypothesis is `hd: ∀ (c : ℕ), a * d = a * c → d = c` and in the inductive step we
+show that `ha: a ≠ 0` and `h: a * succ d = a * c` imply `succ d = c`. We split `hd` into `cases`
+when `c = 0` and `c = succ e`. When `c = 0`, we rewrite `h` into `a * succ d = 0` and close the
+goal using `mul_eq_zero`, `cases`, and `a ≠ 0`. When `c = succ e`, we rewrite `h` into
+`h: a * d + a = a * e + a` and use `add_right_cancel` to further rewrite `h` into `a * d = a * e`.
+We then apply the inductive hypothesis `hd` to conclude that `d = e` and close the goal by
+rewriting `succ d = succ e` into `succ e = succ e` and using `rfl`.
+-/
+
+/- Prove: -/
+/- theorem mul_right_eq_self (a b : ℕ) (ha : a ≠ 0) (h : a * b = a) : b = 1 := by -/
+/- Proof:
+```
+nth_rewrite 2 [← mul_one a] at h
+apply mul_left_cancel a b 1 ha at h
+exact h
+```
+
+Explanation: We recognize that this is a special case of `mul_left_cancel`. We rewrite `h` into
+`a * b = a * 1` and apply `mul_left_cancel`.
+-/
+
+
+
 /- Template -/
 /- Prove: -/
 /- Proof:
